@@ -278,7 +278,7 @@ final class ContestController extends Controller
         $data = $this->validateContest($request, $contest);
 
         // start_time is frozen once it has been reached.
-        if ($contest->startTimeLocked() && $data['start_time'] !== $contest->start_time?->format('Y-m-d\\TH:i')) {
+        if ($contest->startTimeLocked() && $data['start_time'] !== $contest->start_time?->format('Y-m-d\TH:i')) {
             return back()
                 ->withInput()
                 ->withErrors(['start_time' => 'Start time cannot be changed after it has been reached.']);
