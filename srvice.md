@@ -1,17 +1,72 @@
-Complete Services Section
-Below are the five service classes that form the "brain" of the platform. Full implementations, no stubs.
+# Complete Services Section
 
-§0 — What you get
-File	Purpose
-app/Exceptions/JudgeException.php	Typed exceptions for judge failures
-app/Services/JudgeClient.php	HTTP client for FastAPI judge — submit, status, languages, unit conversions, verdict mapping
-app/Services/JudgeLanguages.php	Cached language list for the submission form
-app/Services/SubmissionResultProcessor.php	Parses a judge status response, writes results transactionally, invalidates scoreboard cache
-app/Services/ScoreboardService.php	ICPC scoreboard computation with freeze window
-No service provider needed — Laravel auto-wires all five via the container. JudgeClient reads config('judge.*') in its constructor; everything else takes typed dependencies in its constructor and gets injected automatically.
+This document contains the five service/support classes described in `service.txt`, with complete implementations, service responsibilities, unit conversions, integration notes, and the source's final note fragment.
 
-§1 — app/Exceptions/JudgeException.php
-php
+## Services Included
+
+| File | Purpose |
+| --- | --- |
+| `app/Exceptions/JudgeException.php` | Typed exceptions for judge failures. |
+| `app/Services/JudgeClient.php` | HTTP client for the FastAPI judge: submit, status, languages, unit conversions, and verdict mapping. |
+| `app/Services/JudgeLanguages.php` | Cached language list for the submission form. |
+| `app/Services/SubmissionResultProcessor.php` | Parses judge status responses, writes results transactionally, and invalidates scoreboard cache. |
+| `app/Services/ScoreboardService.php` | ICPC scoreboard computation with freeze window. |
+
+No service provider is needed: Laravel auto-wires all five through the container. `JudgeClient` reads `config('judge.*')` in its constructor; other dependencies use typed constructor injection.
+
+## Service Flow
+
+```mermaid
+flowchart LR
+    Controller[Controller] --> Client[JudgeClient]
+    Client -->|HTTP request| Judge[FastAPI judge]
+    Judge -->|job response| Client
+    Client --> Processor[SubmissionResultProcessor]
+    Processor -->|transactional results and verdict| Database[(Database)]
+    Processor -->|forget both scoreboard keys| Cache[(Cache)]
+    LanguageForm[Submission form] --> Languages[JudgeLanguages]
+    Languages -->|cached call| Client
+    ScoreboardController[Scoreboard controller] --> Scoreboard[ScoreboardService]
+    Scoreboard --> Cache
+    Scoreboard --> Database
+```
+
+## Judge and Database Units
+
+Conversions between judge wire units and database units happen in `JudgeClient` and nowhere else.
+
+| Value | Judge API | Database |
+| --- | --- | --- |
+| Problem time limit | Seconds (integer) | `problems.time_limit_ms`, milliseconds (integer) |
+| Problem memory limit | Kilobytes (integer) | `problems.memory_limit_mb`, megabytes (integer) |
+| Execution time | Seconds (float) | `submissions.max_time_ms` / `submission_results.time_ms`, milliseconds (integer) |
+| Memory usage | Kilobytes (integer) | `submission_results.memory_kb`, kilobytes (integer) |
+
+## Judge Job Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Queued
+    Queued --> Running
+    Running --> Completed
+    Running --> Failed
+    Completed --> ResultsApplied: SubmissionResultProcessor
+    Failed --> InternalError: SubmissionResultProcessor
+    ResultsApplied --> [*]
+    InternalError --> [*]
+```
+
+The judge API contract described by the source:
+
+- `POST /api/v1/submissions/` → `202 { job_id, job_status }`
+- `GET /api/v1/submissions/{job_id}` → `{ job_id, job_status, result|null }`
+- `GET /api/v1/languages/` → `{ languages: [{id, name, available, needs_compilation}] }`
+- Verdicts: `Accepted`, `Wrong Answer`, `Time Limit Exceeded`, `Memory Limit Exceeded`, `Runtime Error`, `Compilation Error`, `Internal Error`.
+- Job statuses: `Queued`, `Running`, `Completed`, `Failed`.
+
+## 1. `app/Exceptions/JudgeException.php`
+
+```php
 <?php
 
 namespace App\Exceptions;
@@ -66,8 +121,11 @@ final class JudgeException extends RuntimeException
         return new self("Cannot build judge payload: {$reason}");
     }
 }
-§2 — app/Services/JudgeClient.php
-php
+```
+
+## 2. `app/Services/JudgeClient.php`
+
+```php
 <?php
 
 namespace App\Services;
@@ -103,10 +161,10 @@ use Illuminate\Support\Facades\Http;
  *   memory_usage   kilobytes (int)
  *
  * Units in our database:
- *   problems.time_limit_ms      milliseconds (int)
- *   problems.memory_limit_mb    megabytes (int)
- *   submissions.max_time_ms     milliseconds (int)
- *   submission_results.time_ms  milliseconds (int)
+ *   problems.time_limit_ms       milliseconds (int)
+ *   problems.memory_limit_mb     megabytes (int)
+ *   submissions.max_time_ms      milliseconds (int)
+ *   submission_results.time_ms   milliseconds (int)
  *   submission_results.memory_kb kilobytes (int)
  *
  * The conversions happen here and nowhere else.
@@ -385,8 +443,11 @@ final class JudgeClient
         return strtolower(trim($language));
     }
 }
-§3 — app/Services/JudgeLanguages.php
-php
+```
+
+## 3. `app/Services/JudgeLanguages.php`
+
+```php
 <?php
 
 namespace App\Services;
@@ -464,8 +525,11 @@ final class JudgeLanguages
         Cache::forget(self::CACHE_KEY);
     }
 }
-§4 — app/Services/SubmissionResultProcessor.php
-php
+```
+
+## 4. `app/Services/SubmissionResultProcessor.php`
+
+```php
 <?php
 
 namespace App\Services;
@@ -686,8 +750,13 @@ final class SubmissionResultProcessor
         Cache::forget(ScoreboardService::cacheKey($submission->contest_id, true));
     }
 }
-§5 — app/Services/ScoreboardService.php
-php
+```
+
+`apply()` is idempotent. Pending jobs update `last_judge_check_at` and return `false`; completed jobs map verdicts and write per-case results in a transaction; failed jobs are marked as internal errors. Test-case ordinals from the judge are 1-based and map to the sorted local test-case collection. If the judge stops early, omitted cases get no result row.
+
+## 5. `app/Services/ScoreboardService.php`
+
+```php
 <?php
 
 namespace App\Services;
@@ -957,43 +1026,34 @@ final class ScoreboardService
         return $end->copy()->subMinutes($contest->freeze_minutes);
     }
 }
-§6 — Notes and integration points
-JudgeClient reads config in its constructor. No service provider is needed. On every request the container instantiates it, reads config('judge.*'), and hands it over. Http::fake() in tests intercepts all calls — no mocking of the class itself required.
+```
 
-SubmissionResultProcessor::apply() is idempotent. The if ($submission->isFinal()) return false; guard means a contestant's polling loop, the submissions:poll command, and the admin rejudge path can all call it without coordination. Duplicate writes cannot happen because the row is already status = 'done' and judge_job_id is unique.
+## 6. Notes and Integration Points
 
-SubmissionResultProcessor deletes results() inside the transaction before writing new ones. This is belt-and-braces: if a previous apply() crashed mid-transaction (which shouldn't happen because it's transactional, but defensive coding), the retry starts clean. Also means rejudge via AdminSubmissionController::rejudge (which manually deletes before re-submitting) and apply() are consistent — both clear-then-write.
+- **Judge client configuration:** `JudgeClient` reads configuration in its constructor. No service provider is required. The container instantiates it and reads `config('judge.*')`; tests can use `Http::fake()` to intercept calls without mocking the class.
+- **Processor idempotency:** `SubmissionResultProcessor::apply()` immediately returns `false` for a finalized submission. The contestant polling loop, `submissions:poll` command, and admin rejudge path can call it without coordination. The source notes that duplicate writes cannot happen because the row is already `status = 'done'` and `judge_job_id` is unique.
+- **Clear then write:** The processor deletes prior result rows inside the transaction before creating new ones. This is defensive idempotency; it is consistent with the admin rejudge path, which also clears results before resubmitting.
+- **Scoreboard invalidation:** After finalization the processor forgets both cache keys using `ScoreboardService::cacheKey(...)`, so the next build sees the new result. Broadcast events (`SubmissionJudged` / `ScoreboardUpdated`) are deliberately deferred to a future event system such as Reverb.
+- **Scoreboard cache duration:** `ScoreboardService::build()` caches for 5 seconds by default. Contestants poll every 10 seconds, so the data should be within the expected freshness window. Faster admin polling can use cache hits to avoid database load; pass `$ttlSeconds = 0` to bypass cache for instant admin updates.
+- **Ranking/ties:** Exact `(solved, penalty)` ties share a rank. Team name provides deterministic display order within a shared rank. To use last AC time as a true ranking tiebreaker, add it to sorting and remove shared-rank behavior.
+- **Freeze behavior:**
+  - `frozen = false` (admin): every submission counts. `is_frozen` remains an informational flag for rows with freeze-window activity.
+  - `frozen = true` (contestant during a running contest): freeze-window submissions do not count toward score. A problem with freeze-window activity is marked `frozen` unless already solved before freeze.
+  - When the contest ends, call with `frozen = false` to reveal the final scoreboard.
+- **Sample runs:** `is_sample_run = false` filters sample runs out of the scoreboard; they remain visible on the submission detail page to the submitting team.
+- **Judge language fallback:** `JudgeLanguages` catches exceptions and returns an empty list. The submission form can still render when the judge is down, with an empty language list. The source says the submit validation then fails against the languages list and the admin sees a warning on the problem page. To hard-fail instead, remove the `try/catch` in `all()`.
+- **System-only fields:** `SubmissionResultProcessor` uses `forceFill(...)->save()` so it can update fields not in `$fillable`. `last_judge_check_at` should not be mass-assignable; the same reasoning applies to `judge_job_id` updates elsewhere.
+- **What the processor does not do:**
+  - Fire broadcast events (deferred until Reverb/event support is added).
+  - Update the `submissions:stale` cutoff (the command owns that behavior).
+  - Touch a submission already finalized (idempotency guard).
+- **What the scoreboard does not do:**
+  - Cache per participation; each build loads the needed contest data. This is acceptable for a few thousand submissions; optimize if it becomes a bottleneck.
+  - Include pending submissions in ranking; only `status = 'done'` verdicts count.
+  - Handle partial scoring; it is deliberately pure ICPC in the current design.
 
-SubmissionResultProcessor invalidates the scoreboard cache via Cache::forget(ScoreboardService::cacheKey(...)). This means the next build() call sees the new result. Broadcasts (SubmissionJudged / ScoreboardUpdated) are deliberately not fired here — they belong to the deferred event system. Add them when you introduce Reverb.
+## Source Ending
 
-ScoreboardService::build() caches internally for 5 seconds. Contestant polling is 10s, so no user ever sees data staler than the poll interval. Admin dashboards polling faster than 5s will get cache hits — that's desirable (prevents hammering the DB during bursts). If you want admin to see instant updates, call with $ttlSeconds = 0 to bypass cache.
+The supplied `service.txt` ends mid-sentence after this fragment; it is preserved without guessing the missing continuation:
 
-Scoreboard rank is shared for exact (solved, penalty) ties. Within a shared rank, teams sort alphabetically — stable and deterministic. If you later want "last AC time" as a true tiebreaker for rank assignment, add it to the sort before team name and drop the "share rank" behavior.
-
-Freeze behavior summary:
-
-frozen = false (admin): every submission counts. is_frozen still flagged on rows with freeze-window activity, but it doesn't affect score — it's informational.
-
-frozen = true (contestant during running): submissions during the freeze window are excluded from the score. Problems with freeze-window activity are marked 'frozen' (they show as ? in the Blade view) unless already solved before the freeze. When the contest ends, call with frozen = false — the truth is revealed to everyone.
-
-No run on samples cache distinction. Sample runs are filtered out at the where('is_sample_run', false) clause — they never appear on the scoreboard. The submission detail page shows them, but only to the submitting team. This is exactly what you want.
-
-JudgeLanguages swallows exceptions and returns []. The submission form will render with an empty language dropdown if the judge is down, and the "Submit" button will fail on the validation check in SubmitController (which checks in_array($language, $judge->languages(...))). The intent: contests should still be viewable even if the judge is temporarily unreachable, and the admin sees a warning on the problem page. If you'd rather hard-fail, remove the try/catch in all() — that's a one-line change.
-
-SubmissionResultProcessor uses forceFill(...)->save() rather than update(...). This lets it modify fields without touching $fillable. last_judge_check_at isn't in Submission::$fillable (it shouldn't be — that's a system field), so forceFill is the right tool. Same for the model's judge_job_id updates elsewhere.
-
-What the processor does NOT do:
-
-Fire broadcast events (deferred — no Reverb yet)
-
-Update the submissions:stale cutoff (that's the command's job)
-
-Touch any submission that's already final (idempotency guard)
-
-What the scoreboard does NOT do:
-
-Cache per-participation (each build loads everything — fine for a few thousand submissions; optimize if it becomes a bottleneck)
-
-Show "pending" submissions in the ranking (they're excluded by status = 'done' — only finalized verdicts count)
-
-Handle partial scoring (deliberately pure ICPC — see $cp->points in contest_problems if you ever change
+> Handle partial scoring (deliberately pure ICPC — see `$cp->points` in contest_problems if you ever change

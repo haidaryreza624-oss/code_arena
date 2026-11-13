@@ -1,32 +1,60 @@
-Complete Factories and Seeders
-Below are all 11 factories (one per business model) plus 3 seeders. Every file is complete — nothing abbreviated. I'll list what each does and then give the code in build order.
+# Complete Factories and Seeders
 
-§0 — What you get
-File	Purpose
-database/factories/UserFactory.php	Admin user. role defaults to admin.
-database/factories/TeamFactory.php	Team with withMembers(int $count = 3) state
-database/factories/TeamMemberFactory.php	Individual member
-database/factories/ContestFactory.php	States: draft(), approved(), running(), ended() — see note about active_slot
-database/factories/ContestParticipationFactory.php	Contest-scoped credentials
-database/factories/ProblemFactory.php	Problem bank entry
-database/factories/ContestProblemFactory.php	Attach problem to contest — auto-picks next free label
-database/factories/TestCaseFactory.php	Writes real files to disk, computes hashes
-database/factories/SubmissionFactory.php	States for verdict variety + forParticipation()
-database/factories/SubmissionResultFactory.php	Per-test-case result
-database/factories/ContestQuestionFactory.php	Q&A entry
-database/seeders/DatabaseSeeder.php	Calls AdminUserSeeder + DemoSeeder
-database/seeders/AdminUserSeeder.php	One admin, idempotent
-database/seeders/DemoSeeder.php	Full playthrough: bank + contest + teams + submissions, idempotent
-Critical note about active_slot: The contests table has a generated column active_slot = CASE WHEN status IN ('approved','running') THEN 1 ELSE NULL END with a UNIQUE constraint. This means only one contest can be approved or running at a time — this is the database enforcing the business rule. Consequently:
+This reference contains all 11 factories (one per business model) and all 3 seeders from `factories.txt`. Each PHP listing is included in full, followed by factory behavior, seed order, and operational notes.
 
-You cannot call Contest::factory()->running()->create() twice in the same test without the second one throwing a unique-constraint exception. That's correct behavior, not a bug — it mirrors reality.
+## Files Included
 
-If a test needs an "existing running contest" and then wants to create another, either end/delete the first or use the ended() state instead.
+| File | Purpose |
+| --- | --- |
+| `database/factories/UserFactory.php` | Admin user; defaults to admin role. |
+| `database/factories/TeamFactory.php` | Team with `withMembers(int $count = 3)` state. |
+| `database/factories/TeamMemberFactory.php` | Individual team member. |
+| `database/factories/ContestFactory.php` | Draft/approved/running/ended states; see `active_slot` constraint. |
+| `database/factories/ContestParticipationFactory.php` | Contest-scoped team credentials. |
+| `database/factories/ProblemFactory.php` | Problem bank entry. |
+| `database/factories/ContestProblemFactory.php` | Attaches problem to contest and auto-picks a label. |
+| `database/factories/TestCaseFactory.php` | Writes test-case files and computes hashes. |
+| `database/factories/SubmissionFactory.php` | Verdict states and `forParticipation()`. |
+| `database/factories/SubmissionResultFactory.php` | Per-test-case result. |
+| `database/factories/ContestQuestionFactory.php` | Q&A entry. |
+| `database/seeders/DatabaseSeeder.php` | Calls `AdminUserSeeder` and `DemoSeeder`. |
+| `database/seeders/AdminUserSeeder.php` | Creates one admin idempotently. |
+| `database/seeders/DemoSeeder.php` | Idempotent demo playthrough: problem bank, contest, teams, submissions, and questions. |
 
-The DemoSeeder creates one running contest via firstOrCreate — running db:seed twice is safe.
+## Factory and Seeder Flow
 
-§1 — database/factories/UserFactory.php
-php
+```mermaid
+flowchart TD
+    DBSEED[DatabaseSeeder] --> ADMIN[AdminUserSeeder]
+    DBSEED --> DEMO[DemoSeeder]
+    ADMIN --> USER[Admin User]
+    DEMO --> PROBLEMS[Problems and test cases]
+    DEMO --> CONTEST[Running demo contest]
+    PROBLEMS --> ATTACH[Contest problem assignments]
+    CONTEST --> TEAMS[Teams and members]
+    TEAMS --> PARTICIPATIONS[Contest participations and credentials]
+    ATTACH --> SUBMISSIONS[Submissions and per-case results]
+    PARTICIPATIONS --> SUBMISSIONS
+    PARTICIPATIONS --> QUESTIONS[Contest questions and answers]
+```
+
+## Important: The `active_slot` Constraint
+
+The contests table has a generated column:
+
+```sql
+CASE WHEN status IN ('approved', 'running') THEN 1 ELSE NULL END
+```
+
+with a `UNIQUE` constraint. Only one contest can be approved or running at a time; the database enforces this business rule.
+
+- Do not create two approved/running contests in the same test. The second insert raises a unique-constraint exception, which is correct behavior.
+- If a test needs an existing running contest and then another contest, end or delete the first one, or use the `ended()` state for the second.
+- `DemoSeeder` creates one running contest with `firstOrCreate`, so repeated `db:seed` runs are safe.
+
+## 1. `database/factories/UserFactory.php`
+
+```php
 <?php
 
 namespace Database\Factories;
@@ -69,8 +97,11 @@ class UserFactory extends Factory
         return $this->state(fn () => ['role' => User::ROLE_OPERATOR]);
     }
 }
-§2 — database/factories/TeamFactory.php
-php
+```
+
+## 2. `database/factories/TeamFactory.php`
+
+```php
 <?php
 
 namespace Database\Factories;
@@ -103,8 +134,11 @@ class TeamFactory extends Factory
         });
     }
 }
-§3 — database/factories/TeamMemberFactory.php
-php
+```
+
+## 3. `database/factories/TeamMemberFactory.php`
+
+```php
 <?php
 
 namespace Database\Factories;
@@ -130,8 +164,11 @@ class TeamMemberFactory extends Factory
         ];
     }
 }
-§4 — database/factories/ContestFactory.php
-php
+```
+
+## 4. `database/factories/ContestFactory.php`
+
+```php
 <?php
 
 namespace Database\Factories;
@@ -231,8 +268,11 @@ class ContestFactory extends Factory
         });
     }
 }
-§5 — database/factories/ContestParticipationFactory.php
-php
+```
+
+## 5. `database/factories/ContestParticipationFactory.php`
+
+```php
 <?php
 
 namespace Database\Factories;
@@ -282,8 +322,11 @@ class ContestParticipationFactory extends Factory
         ]);
     }
 }
-§6 — database/factories/ProblemFactory.php
-php
+```
+
+## 6. `database/factories/ProblemFactory.php`
+
+```php
 <?php
 
 namespace Database\Factories;
@@ -313,8 +356,11 @@ class ProblemFactory extends Factory
         ];
     }
 }
-§7 — database/factories/ContestProblemFactory.php
-php
+```
+
+## 7. `database/factories/ContestProblemFactory.php`
+
+```php
 <?php
 
 namespace Database\Factories;
@@ -371,8 +417,11 @@ class ContestProblemFactory extends Factory
         });
     }
 }
-§8 — database/factories/TestCaseFactory.php
-php
+```
+
+## 8. `database/factories/TestCaseFactory.php`
+
+```php
 <?php
 
 namespace Database\Factories;
@@ -443,8 +492,11 @@ class TestCaseFactory extends Factory
         });
     }
 }
-§9 — database/factories/SubmissionFactory.php
-php
+```
+
+## 9. `database/factories/SubmissionFactory.php`
+
+```php
 <?php
 
 namespace Database\Factories;
@@ -577,8 +629,11 @@ class SubmissionFactory extends Factory
         });
     }
 }
-§10 — database/factories/SubmissionResultFactory.php
-php
+```
+
+## 10. `database/factories/SubmissionResultFactory.php`
+
+```php
 <?php
 
 namespace Database\Factories;
@@ -641,8 +696,11 @@ class SubmissionResultFactory extends Factory
         ]);
     }
 }
-§11 — database/factories/ContestQuestionFactory.php
-php
+```
+
+## 11. `database/factories/ContestQuestionFactory.php`
+
+```php
 <?php
 
 namespace Database\Factories;
@@ -699,8 +757,13 @@ class ContestQuestionFactory extends Factory
         ]);
     }
 }
-§12 — database/seeders/DatabaseSeeder.php
-php
+```
+
+# Seeders
+
+## 12. `database/seeders/DatabaseSeeder.php`
+
+```php
 <?php
 
 namespace Database\Seeders;
@@ -717,8 +780,11 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 }
-§13 — database/seeders/AdminUserSeeder.php
-php
+```
+
+## 13. `database/seeders/AdminUserSeeder.php`
+
+```php
 <?php
 
 namespace Database\Seeders;
@@ -751,8 +817,13 @@ class AdminUserSeeder extends Seeder
         $this->command->info("Admin user: {$email}  password: {$password}");
     }
 }
-§14 — database/seeders/DemoSeeder.php
-php
+```
+
+The seeder is idempotent and uses `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD`, defaulting to `admin@codearena.test` / `password`. Change the password immediately after the first login. The seeder prints the credentials to the command output.
+
+## 14. `database/seeders/DemoSeeder.php`
+
+```php
 <?php
 
 namespace Database\Seeders;
@@ -1184,48 +1255,31 @@ class DemoSeeder extends Seeder
         ]);
     }
 }
-§15 — Notes and gotchas
-The active_slot unique constraint is real. If you write a test that does Contest::factory()->running()->create() twice in the same transaction, the second insert throws a QueryException because active_slot is 1 for both. That's intentional — the DB is enforcing your "one contest at a time" rule. Fix in tests by ending the first one or using the ended() state for the second.
+```
 
-The DemoSeeder is idempotent by design. Run it as many times as you like:
+The demo contains 3 problems, sample and hidden test cases, one running contest, 5 teams with members, contest-scoped credentials, about 20 submissions with varied verdicts, and a few Q&A examples. Its seeded contest is `demo-contest-2024`.
 
-Problems: firstOrCreate by code
+## 15. Notes and Gotchas
 
-Contest: firstOrCreate by slug
+- **Active contest uniqueness:** Creating a second approved/running contest in a test triggers a `QueryException` because both would have `active_slot = 1`. End the first contest or use `ended()` for the next.
+- **Demo seeder idempotency:** It uses `firstOrCreate` by problem code, contest slug, team name, and `(contest_id, team_id)` participation. It creates submissions only when the contest has none, and questions only when the contest has none.
+- **Factory file writes:** `TestCaseFactory` and `SubmissionFactory` write files in `afterCreating` hooks:
+  - `TestCase::factory()->create()` inserts placeholders, writes real files, then updates hashes and paths (2 database writes).
+  - `TestCase::factory()->make()` does not write files.
+  - `Submission::factory()->create()` inserts a placeholder path, writes the source, then updates its path (2 database writes).
+- **Fake storage in tests:** Configure `filesystems.test_cases_disk` or `.env`; use `Storage::fake(config('filesystems.test_cases_disk', 'local'))`. Deleting a `TestCase` invokes its model `booted()` cleanup hook.
+- **Participation factory password:** Defaults to `password`. Demo-specific values such as `demo-pass-1` are set by `DemoSeeder` and printed for login testing.
+- **Seeded login output:** After `php artisan db:seed`, the command prints a contestant credential list such as:
 
-Teams: firstOrCreate by name
+  ```text
+  Contestant login credentials:
+    team-001 / demo-pass-1
+    team-002 / demo-pass-2
+    ...
+  ```
 
-Participations: firstOrCreate by (contest_id, team_id)
-
-Submissions: only created if the contest has none
-
-Questions: only created if the contest has none
-
-File writes happen in afterCreating hooks for TestCase and Submission. This means:
-
-TestCase::factory()->create() → placeholder insert, then real file write + hash update (2 queries)
-
-TestCase::factory()->make() → no files written (fine — nothing to read)
-
-Submission::factory()->create() → placeholder path insert, then real file write + path update (2 queries)
-
-TestCase factory relies on config('filesystems.test_cases_disk'). Set this in config/filesystems.php or .env. In tests, use Storage::fake(config('filesystems.test_cases_disk', 'local')) and files land on the fake disk. Deleting a TestCase cleans up via the model's booted() hook — file test data is dropped with the model.
-
-ContestParticipation factory passwords default to 'password'. Realistic demo credentials (demo-pass-1, etc.) are set only by the DemoSeeder, so the printed login table is meaningful.
-
-The DemoSeeder output includes the login table. After php artisan db:seed, you see:
-
-text
-Contestant login credentials:
-  team-001 / demo-pass-1
-  team-002 / demo-pass-2
-  ...
-That's the copy-paste fast path for smoke-testing.
-
-DemoSeeder's running contest will occupy active_slot. If you create a new draft and try to approve it while the demo is running, the approval will be blocked (as intended). To demo the full lifecycle yourself: end the demo contest, then approve your own draft.
-
-The demo contest starts an hour before seed time (start_time = now()->subHour()). If you run the seeder and immediately open /c/demo-contest-2024, the contest is already running and accepts submissions. That's the fastest way to see the flow working.
-
-ADMIN_SEED_EMAIL / ADMIN_SEED_PASSWORD env vars control the admin credentials. Default admin@codearena.test / password. Add these to .env.example and change after first login.
-
-SubmissionResult factory needs explicit relationships for realistic data. The forSubmissionAndTestCase($s, $tc) state is what the DemoSeeder effectively does inline. Factory default creates unrelated Submission + TestCase — fine for schema tests, wrong for scoreboard tests.
+  This is the copy/paste path for smoke testing.
+- **Demo active slot:** The demo seeder's running contest occupies `active_slot`. Approving another draft is blocked until the demo contest ends. For a full lifecycle demo, end it first.
+- **Demo timing:** The demo contest starts one hour before seed time (`start_time = now()->subHour()`), so it is already running and accepts submissions when first opened.
+- **Admin seed credentials:** `ADMIN_SEED_EMAIL` and `ADMIN_SEED_PASSWORD` configure credentials. Defaults are `admin@codearena.test` / `password`. Add these variables to `.env.example` and change the password after first login.
+- **Submission result relationships:** The default `SubmissionResultFactory` creates unrelated `Submission` and `TestCase` records. That is fine for schema tests but wrong for scoreboard tests. Use `forSubmissionAndTestCase($s, $tc)` or construct matching data as the demo seeder does.
