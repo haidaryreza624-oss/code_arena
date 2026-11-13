@@ -66,8 +66,8 @@ flowchart LR
     TC --> TCF[input and output files]
     SUB[Submission] --> SD[configured source disk]
     SUB --> SF[submitted source file]
-    JC[JudgeClient] -. language map from config/judge.php .-> LANG[Judge language ID]
-    SUB -. language string .-> JC
+    JC[JudgeClient] -.->|language map from config/judge.php| LANG[Judge language ID]
+    SUB -.->|language string| JC
 ```
 
 ## 1. `app/Models/User.php`
