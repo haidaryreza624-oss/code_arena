@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('contest', function (Blueprint $table) {
+        Schema::create('contests', function (Blueprint $table) {
             $table->bigInteger('id')
                 ->unsigned()
                 ->primary();
