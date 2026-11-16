@@ -4,22 +4,22 @@ This reference contains all 11 factories (one per business model) and all 3 seed
 
 ## Files Included
 
-| File | Purpose |
-| --- | --- |
-| `database/factories/UserFactory.php` | Admin user; defaults to admin role. |
-| `database/factories/TeamFactory.php` | Team with `withMembers(int $count = 3)` state. |
-| `database/factories/TeamMemberFactory.php` | Individual team member. |
-| `database/factories/ContestFactory.php` | Draft/approved/running/ended states; see `active_slot` constraint. |
-| `database/factories/ContestParticipationFactory.php` | Contest-scoped team credentials. |
-| `database/factories/ProblemFactory.php` | Problem bank entry. |
-| `database/factories/ContestProblemFactory.php` | Attaches problem to contest and auto-picks a label. |
-| `database/factories/TestCaseFactory.php` | Writes test-case files and computes hashes. |
-| `database/factories/SubmissionFactory.php` | Verdict states and `forParticipation()`. |
-| `database/factories/SubmissionResultFactory.php` | Per-test-case result. |
-| `database/factories/ContestQuestionFactory.php` | Q&A entry. |
-| `database/seeders/DatabaseSeeder.php` | Calls `AdminUserSeeder` and `DemoSeeder`. |
-| `database/seeders/AdminUserSeeder.php` | Creates one admin idempotently. |
-| `database/seeders/DemoSeeder.php` | Idempotent demo playthrough: problem bank, contest, teams, submissions, and questions. |
+| File                                                 | Purpose                                                                                |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `database/factories/UserFactory.php`                 | Admin user; defaults to admin role.                                                    |
+| `database/factories/TeamFactory.php`                 | Team with `withMembers(int $count = 3)` state.                                         |
+| `database/factories/TeamMemberFactory.php`           | Individual team member.                                                                |
+| `database/factories/ContestFactory.php`              | Draft/approved/running/ended states; see `active_slot` constraint.                     |
+| `database/factories/ContestParticipationFactory.php` | Contest-scoped team credentials.                                                       |
+| `database/factories/ProblemFactory.php`              | Problem bank entry.                                                                    |
+| `database/factories/ContestProblemFactory.php`       | Attaches problem to contest and auto-picks a label.                                    |
+| `database/factories/TestCaseFactory.php`             | Writes test-case files and computes hashes.                                            |
+| `database/factories/SubmissionFactory.php`           | Verdict states and `forParticipation()`.                                               |
+| `database/factories/SubmissionResultFactory.php`     | Per-test-case result.                                                                  |
+| `database/factories/ContestQuestionFactory.php`      | Q&A entry.                                                                             |
+| `database/seeders/DatabaseSeeder.php`                | Calls `AdminUserSeeder` and `DemoSeeder`.                                              |
+| `database/seeders/AdminUserSeeder.php`               | Creates one admin idempotently.                                                        |
+| `database/seeders/DemoSeeder.php`                    | Idempotent demo playthrough: problem bank, contest, teams, submissions, and questions. |
 
 ## Factory and Seeder Flow
 
@@ -1264,21 +1264,22 @@ The demo contains 3 problems, sample and hidden test cases, one running contest,
 - **Active contest uniqueness:** Creating a second approved/running contest in a test triggers a `QueryException` because both would have `active_slot = 1`. End the first contest or use `ended()` for the next.
 - **Demo seeder idempotency:** It uses `firstOrCreate` by problem code, contest slug, team name, and `(contest_id, team_id)` participation. It creates submissions only when the contest has none, and questions only when the contest has none.
 - **Factory file writes:** `TestCaseFactory` and `SubmissionFactory` write files in `afterCreating` hooks:
-  - `TestCase::factory()->create()` inserts placeholders, writes real files, then updates hashes and paths (2 database writes).
-  - `TestCase::factory()->make()` does not write files.
-  - `Submission::factory()->create()` inserts a placeholder path, writes the source, then updates its path (2 database writes).
+    - `TestCase::factory()->create()` inserts placeholders, writes real files, then updates hashes and paths (2 database writes).
+    - `TestCase::factory()->make()` does not write files.
+    - `Submission::factory()->create()` inserts a placeholder path, writes the source, then updates its path (2 database writes).
 - **Fake storage in tests:** Configure `filesystems.test_cases_disk` or `.env`; use `Storage::fake(config('filesystems.test_cases_disk', 'local'))`. Deleting a `TestCase` invokes its model `booted()` cleanup hook.
 - **Participation factory password:** Defaults to `password`. Demo-specific values such as `demo-pass-1` are set by `DemoSeeder` and printed for login testing.
 - **Seeded login output:** After `php artisan db:seed`, the command prints a contestant credential list such as:
 
-  ```text
-  Contestant login credentials:
-    team-001 / demo-pass-1
-    team-002 / demo-pass-2
-    ...
-  ```
+    ```text
+    Contestant login credentials:
+      team-001 / demo-pass-1
+      team-002 / demo-pass-2
+      ...
+    ```
 
-  This is the copy/paste path for smoke testing.
+    This is the copy/paste path for smoke testing.
+
 - **Demo active slot:** The demo seeder's running contest occupies `active_slot`. Approving another draft is blocked until the demo contest ends. For a full lifecycle demo, end it first.
 - **Demo timing:** The demo contest starts one hour before seed time (`start_time = now()->subHour()`), so it is already running and accepts submissions when first opened.
 - **Admin seed credentials:** `ADMIN_SEED_EMAIL` and `ADMIN_SEED_PASSWORD` configure credentials. Defaults are `admin@codearena.test` / `password`. Add these variables to `.env.example` and change the password after first login.
