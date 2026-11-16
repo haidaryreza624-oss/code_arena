@@ -14,7 +14,8 @@ return [
     */
 
     'default' => env('FILESYSTEM_DISK', 'local'),
-
+    'test_cases_disk' => env('TEST_CASES_DISK', 'test_cases'),
+    'sources_disk'    => env('SOURCES_DISK', 'sources'),
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
@@ -45,6 +46,20 @@ return [
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
+        ],
+        'test_cases' => [
+            'driver' => 'local',
+            'root'   => storage_path('app/private/test_cases'),
+            'serve'  => true,
+            'throw'  => false,
+        ],
+
+
+        'sources' => [
+            'driver' => 'local',
+            'root'   => storage_path('app/private/sources'),
+            'serve'  => true,
+            'throw'  => false,
         ],
 
         's3' => [
