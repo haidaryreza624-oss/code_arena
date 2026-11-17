@@ -9,22 +9,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('submissions', function (Blueprint $table) {
-            $table->bigInteger('id')
-                ->unsigned()
-                ->primary();
-            
+            $table->id();
+
             $table->foreignId('contest_id')
                 ->constrained('contests')
                 ->cascadeOnDelete();
-            
+
             $table->foreignId('participation_id')
                 ->constrained('contest_participations')
                 ->cascadeOnDelete();
-            
+
             $table->foreignId('contest_problem_id')
                 ->constrained('contest_problems')
                 ->cascadeOnDelete();
-            
+
             $table->string('language', 32);
             $table->string('source_path', 500);
 
@@ -57,7 +55,7 @@ return new class extends Migration
                   ->nullable()
                   ->constrained('users')
                   ->nullOnDelete();
-                  
+
             $table->timestamps();
 
             $table->index(['contest_id', 'participation_id']);

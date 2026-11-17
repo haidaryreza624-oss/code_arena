@@ -31,9 +31,9 @@ class ContestFactory extends Factory
             'status'         => Contest::STATUS_DRAFT,
             'start_time'     => $start,
             'end_time'       => $end,
-            'started_at'     => null,
-            'ended_at'       => null,
-            'freeze_minutes' => 0,
+            'start_at'     => null,
+            'end_at'       => null,
+            'freeze-minutes' => 0,
             'is_public'      => true,
             'approved_at'    => null,
             'approved_by'    => null,
@@ -45,8 +45,8 @@ class ContestFactory extends Factory
     {
         return $this->state(fn () => [
             'status'      => Contest::STATUS_DRAFT,
-            'started_at'  => null,
-            'ended_at'    => null,
+            'start_at'  => null,
+            'end_at'    => null,
             'approved_at' => null,
             'approved_by' => null,
         ]);
@@ -58,8 +58,8 @@ class ContestFactory extends Factory
             'status'      => Contest::STATUS_APPROVED,
             'start_time'  => now()->addHour(),
             'end_time'    => now()->addHours(4),
-            'started_at'  => null,
-            'ended_at'    => null,
+            'start_at'  => null,
+            'end_at'    => null,
             'approved_at' => now(),
             'approved_by' => User::factory(),
         ]);
@@ -73,8 +73,8 @@ class ContestFactory extends Factory
                 'status'     => Contest::STATUS_RUNNING,
                 'start_time' => $startedAt,
                 'end_time'   => $startedAt->copy()->addHours(3),
-                'started_at' => $startedAt,
-                'ended_at'   => null,
+                'start_at' => $startedAt,
+                'end_at'   => null,
                 'approved_at'=> $startedAt->copy()->subHour(),
                 'approved_by'=> User::factory(),
             ];
@@ -89,8 +89,8 @@ class ContestFactory extends Factory
                 'status'     => Contest::STATUS_ENDED,
                 'start_time' => $startedAt,
                 'end_time'   => $startedAt->copy()->addHours(3),
-                'started_at' => $startedAt,
-                'ended_at'   => $startedAt->copy()->addHours(3),
+                'start_at' => $startedAt,
+                'end_at'   => $startedAt->copy()->addHours(3),
                 'approved_at'=> $startedAt->copy()->subHour(),
                 'approved_by'=> User::factory(),
             ];

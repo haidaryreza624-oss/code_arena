@@ -9,10 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('optional_audit_log', function (Blueprint $table) {
-            $table->bigInteger('id')
-                ->unsigned()
-                ->primary();
-            
+            $table->id();
+
             $table->foreignId('user_id')
                   ->nullable()
                   ->constrained('users')

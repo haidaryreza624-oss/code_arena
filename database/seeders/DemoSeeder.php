@@ -56,9 +56,9 @@ class DemoSeeder extends Seeder
                 'status'         => Contest::STATUS_RUNNING,
                 'start_time'     => now()->subHour(),
                 'end_time'       => now()->addHours(2),
-                'started_at'     => now()->subHour(),
-                'ended_at'       => null,
-                'freeze_minutes' => 0,
+                'start_at'     => now()->subHour(),
+                'end_at'       => null,
+                'freeze-minutes' => 0,
                 'is_public'      => true,
                 'approved_at'    => now()->subHours(2),
                 'approved_by'    => $admin->id,
@@ -121,7 +121,7 @@ class DemoSeeder extends Seeder
                 [
                     'username'                 => $username,
                     'password'                 => Hash::make($password),
-                    'seat_number'              => $idx + 1,
+                    'seat-number'              => $idx + 1,
                     'credentials_generated_at' => now()->subHours(2),
                 ]
             );

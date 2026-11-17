@@ -9,9 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('contests', function (Blueprint $table) {
-            $table->bigInteger('id')
-                ->unsigned()
-                ->primary();
+            $table->id();
             $table->string('slug', 100)->unique();
             $table->string('name', 255);
             $table->enum('status', [

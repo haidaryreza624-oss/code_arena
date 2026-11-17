@@ -25,7 +25,7 @@ class ContestParticipationFactory extends Factory
             'team_id'                  => Team::factory(),
             'username'                 => 'team-' . fake()->unique()->numerify('#####'),
             'password'                 => static::$passwordHash ??= Hash::make('password'),
-            'seat_number'              => fake()->optional(0.7)->numberBetween(1, 100),
+            'seat-number'              => fake()->optional(0.7)->numberBetween(1, 100),
             'credentials_generated_at' => null,
         ];
     }
