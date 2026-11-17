@@ -12,10 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('contest_questions', function (Blueprint $table) {
-            $table->bigInteger('id')
-                ->unsigned()
-                ->primary();
-            
+            $table->id();
+
             $table->foreignId('contest_id')
                   ->constrained('contests')
                   ->cascadeOnDelete();

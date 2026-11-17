@@ -10,9 +10,7 @@ return new class extends Migration
     {
 
         Schema::create('submission_results', function (Blueprint $table) {
-            $table->bigInteger('id')
-                    ->unsigned()
-                    ->primary();
+            $table->id();
             $table->foreignId('submission_id')
                   ->constrained('submissions')
                   ->cascadeOnDelete();

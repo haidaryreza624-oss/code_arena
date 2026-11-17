@@ -9,10 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('team_members', function (Blueprint $table) {
-            $table->bigInteger('id')
-            ->unsigned()
-            ->autoIncrement()
-            ->primary();
+            $table->id();
             $table->foreignId('team_id')
             ->references('id')
             ->on('teams')
