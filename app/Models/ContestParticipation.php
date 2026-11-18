@@ -20,7 +20,7 @@ class ContestParticipation extends Authenticatable
         'team_id',
         'username',
         'password',
-        'seat_number',
+        'seat-number',
         'credentials_generated_at',
     ];
 
