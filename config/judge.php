@@ -27,8 +27,8 @@ return [
     | Timeouts (seconds)
     |--------------------------------------------------------------------------
     | Submit returns 202 immediately — fast. Status can be slower if the
-    | judge queue is backed up. Both bounded generously; JudgeClient throws
-    | JudgeException::unreachable() on connection failure.
+    | judge queue is backed up. Both timeouts are bounded; JudgeClient raises
+    | JudgeException on connection or API errors.
     */
     'submit_timeout' => (int) env('JUDGE_SUBMIT_TIMEOUT', 10),
     'status_timeout' => (int) env('JUDGE_STATUS_TIMEOUT', 30),
@@ -37,7 +37,7 @@ return [
     |--------------------------------------------------------------------------
     | Languages Cache TTL (seconds)
     |--------------------------------------------------------------------------
-    | JudgeLanguages caches GET /languages/ for this long.
+    | JudgeClient caches GET /languages/ for this long.
     */
     'languages_ttl' => (int) env('JUDGE_LANGUAGES_TTL', 300),
 ];

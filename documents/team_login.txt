@@ -1,14 +1,15 @@
 team contes management
+- if a team logs in before the acossiated contest start nothing should be dispayed or avilable for him only a countdown for start of the contest, it should check the contest sate if at any time even the countdown did'nt rich to 0 the state changed to running the remaingn countdown should be ignored and the contest should start, because its a sign of manula start by an admin
+- and as the contset start there should be a visible countdown till the end of teh contest it should also continiously check the state of the contest as it become ended the remaing countdown should be ignored and the contest is ended
 - team login - team credentials are only checked against the only active contest's contest_participation
 - team contes dashabord - team can see basic staff like problems tags, by clicking the problem tags they will be redirected to the problem submission page
-- team contest scoreboard - if contes's visiviility is public than users can have a live scoreboard of the contest 
+- team contest scoreboard - if contes's visiviility is public than users can have a live scoreboard of the contest
 - team question form - teams can ask question about any problem, set the visibility and submit it for admin answer
-- team question-answer - after a teams questions is anwerd they can see their answer, and also the answer of the other public question asked by other teams- 
-- team submission form 
+- team question-answer - after a teams questions is anwerd they can see their answer, and also the answer of the other public question asked by other teams-
+- team submission form
 	- a team can click a problem label and see the submission form
-	- in the submission form we choose a file, the program should detect the language 
+	- in the submission form we choose a file, the program should detect the language
 	- after submitting we redirects to submission result page into a new tab - we can see individual results for sample test cases, and also the overall verdict of the judge wheather our submission is accepted or not
 	- update the scoreboard
 
-	
-	
+
