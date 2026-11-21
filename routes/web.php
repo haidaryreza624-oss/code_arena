@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\ContestController;
+use App\Http\Controllers\Admin\ContestQuestionController;
+use App\Http\Controllers\Admin\ContestSubmissionController;
 use App\Http\Controllers\Admin\ProblemController;
 use App\Http\Controllers\Admin\TestCaseController;
 use App\Http\Controllers\Admin\TeamController;
@@ -27,7 +30,44 @@ Route::prefix('admin')
         Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
 
         Route::prefix('contests')->name('contests.')->group(function () {
-            Route::view('/', 'admin.contests.index')->name('index');
+            Route::get('/', [ContestController::class, 'index'])->name('index');
+            Route::get('/create', [ContestController::class, 'create'])->name('create');
+            Route::post('/', [ContestController::class, 'store'])->name('store');
+            Route::get('/{contest}', [ContestController::class, 'show'])->name('show');
+            Route::put('/{contest}', [ContestController::class, 'update'])->name('update');
+            Route::delete('/{contest}', [ContestController::class, 'destroy'])->name('destroy');
+
+            Route::post('/{contest}/problems', [ContestController::class, 'assignProblem'])->name('problems.assign');
+            Route::delete('/{contest}/problems/{contestProblem}', [ContestController::class, 'unassignProblem'])
+                ->name('problems.unassign');
+            Route::post('/{contest}/teams', [ContestController::class, 'assignTeams'])->name('teams.assign');
+            Route::delete('/{contest}/teams/{participation}', [ContestController::class, 'unassignTeam'])
+                ->name('teams.unassign');
+
+            Route::post('/{contest}/approve', [ContestController::class, 'approve'])->name('approve');
+            Route::post('/{contest}/start', [ContestController::class, 'start'])->name('start');
+            Route::post('/{contest}/end', [ContestController::class, 'end'])->name('end');
+            Route::put('/{contest}/freeze', [ContestController::class, 'updateFreeze'])->name('freeze');
+            Route::post('/{contest}/freeze-now', [ContestController::class, 'freezeNow'])->name('freeze-now');
+
+            Route::post('/{contest}/credentials', [ContestController::class, 'generateCredentials'])
+                ->name('credentials');
+            Route::post('/{contest}/teams/{participation}/credentials', [ContestController::class, 'generateCredentials'])
+                ->name('teams.credentials');
+
+            Route::get('/{contest}/problems/print', [ContestController::class, 'printProblems'])
+                ->name('problems.print');
+            Route::get('/{contest}/questions/{question}', [ContestQuestionController::class, 'show'])
+                ->name('questions.show');
+            Route::put('/{contest}/questions/{question}', [ContestQuestionController::class, 'answer'])
+                ->name('questions.answer');
+
+            Route::get('/{contest}/submissions', [ContestSubmissionController::class, 'index'])
+                ->name('submissions.index');
+            Route::get('/{contest}/submissions/{submission}', [ContestSubmissionController::class, 'show'])
+                ->name('submissions.show');
+            Route::post('/{contest}/submissions/{submission}/rejudge', [ContestSubmissionController::class, 'rejudge'])
+                ->name('submissions.rejudge');
         });
 
         Route::prefix('problems')->name('problems.')->group(function () {

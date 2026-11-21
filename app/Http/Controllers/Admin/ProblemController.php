@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Problem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ProblemController extends Controller
@@ -111,10 +112,17 @@ class ProblemController extends Controller
     {
         abort_if($problem->isInUse(), 423, 'This problem is locked because it is used in a contest.');
 
-        $problem->delete();
+        DB::transaction(function () use ($problem) {
+            foreach ($problem->testCases()->get() as $testCase) {
+                $testCase->delete();
+            }
+
+            $problem->contestProblems()->delete();
+            $problem->delete();
+        });
 
         return redirect()
             ->route('admin.problems.index')
-            ->with('success', 'Problem and its test cases deleted successfully.');
+            ->with('success', 'Problem, test cases, contest assignments, and linked submissions deleted successfully.');
     }
 }

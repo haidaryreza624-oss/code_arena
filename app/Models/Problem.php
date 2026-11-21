@@ -69,9 +69,7 @@ class Problem extends Model
     // ---------- Helpers ----------
 
     /**
-     * A problem is "used" if any contest referencing it is locked
-     * (approved / running / ended). While used, editing statements or
-     * test cases must be blocked at the controller level.
+     * Problems are locked only while an assigned contest is approved or running.
      */
     public function isInUse(): bool
     {
@@ -80,7 +78,6 @@ class Problem extends Model
                 $q->whereIn('status', [
                     Contest::STATUS_APPROVED,
                     Contest::STATUS_RUNNING,
-                    Contest::STATUS_ENDED,
                 ]);
             })
             ->exists();

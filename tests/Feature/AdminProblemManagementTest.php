@@ -131,4 +131,38 @@ class AdminProblemManagementTest extends BaseTestCase
         $this->delete(route('admin.problems.test-cases.destroy', [$problem, $testCase]))
             ->assertStatus(423);
     }
+
+    public function test_problem_assigned_to_an_ended_contest_can_be_updated_and_deleted(): void
+    {
+        $problem = Problem::factory()->create(['created_by' => $this->admin->id]);
+        $contest = Contest::factory()->ended()->create(['created_by' => $this->admin->id]);
+        $contestProblem = ContestProblem::factory()->create([
+            'contest_id' => $contest->id,
+            'problem_id' => $problem->id,
+        ]);
+        $testCase = TestCase::factory()->configure()->create([
+            'problem_id' => $problem->id,
+            'ordinal' => 1,
+        ]);
+        $inputPath = $testCase->input_path;
+        $outputPath = $testCase->output_path;
+
+        $this->actingAs($this->admin, 'web')
+            ->put(route('admin.problems.update', $problem), [
+                'code' => $problem->code,
+                'title' => 'Updated after contest',
+                'statement_md' => '# Updated',
+                'time_limit_ms' => 1000,
+                'memory_limit_mb' => 256,
+            ])->assertRedirect(route('admin.problems.show', $problem));
+
+        $this->delete(route('admin.problems.destroy', $problem))
+            ->assertRedirect(route('admin.problems.index'));
+
+        $this->assertDatabaseMissing('problems', ['id' => $problem->id]);
+        $this->assertDatabaseMissing('contest_problems', ['id' => $contestProblem->id]);
+        $this->assertDatabaseMissing('test_cases', ['id' => $testCase->id]);
+        Storage::disk(config('filesystems.test_cases_disk', 'test_cases'))->assertMissing($inputPath);
+        Storage::disk(config('filesystems.test_cases_disk', 'test_cases'))->assertMissing($outputPath);
+    }
 }

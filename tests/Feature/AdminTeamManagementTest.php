@@ -165,6 +165,38 @@ class AdminTeamManagementTest extends TestCase
         ]);
     }
 
+    public function test_team_in_an_ended_contest_can_be_changed_and_deleted(): void
+    {
+        $team = Team::create(['name' => 'Ended Contest Team']);
+        $member = TeamMember::create([
+            'team_id' => $team->id,
+            'name' => 'Original Member',
+            'email' => 'ended.member@example.test',
+            'ordinal' => 0,
+        ]);
+        $contest = Contest::factory()->ended()->create([
+            'created_by' => $this->admin->id,
+        ]);
+        ContestParticipation::factory()->create([
+            'contest_id' => $contest->id,
+            'team_id' => $team->id,
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->put(route('admin.teams.members.update', [$team, $member]), [
+                'name' => 'Updated Member',
+                'email' => 'updated.member@example.test',
+                'ordinal' => 0,
+            ])->assertRedirect(route('admin.teams.show', $team));
+
+        $this->delete(route('admin.teams.destroy', $team))
+            ->assertRedirect(route('admin.teams.index'));
+
+        $this->assertDatabaseMissing('teams', ['id' => $team->id]);
+        $this->assertDatabaseMissing('team_members', ['id' => $member->id]);
+        $this->assertDatabaseMissing('contest_participations', ['team_id' => $team->id]);
+    }
+
     public function test_csv_import_does_not_add_members_to_teams_in_active_contests(): void
     {
         $team = Team::create(['name' => 'CSV Locked Team']);

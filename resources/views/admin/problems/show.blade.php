@@ -16,7 +16,7 @@
 
 @if ($inUse)
     <div class="alert alert-warning">
-        This problem is locked because it is used in a contest. Updates and test-case changes are disabled.
+        This problem is locked while it is assigned to an approved or running contest. Updates and test-case changes are disabled.
     </div>
 @endif
 
@@ -213,7 +213,9 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        This deletes the problem and all of its test-case files.
+                        This deletes the problem, its test-case files, and its assignments in draft or ended contests.
+                        Submissions linked through those assignments will also be deleted. Problems assigned to an
+                        approved or running contest cannot be deleted.
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
