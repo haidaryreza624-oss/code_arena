@@ -32,6 +32,18 @@ class Team extends Model
         return $this->hasMany(ContestParticipation::class);
     }
 
+    public function isInActiveContest(): bool
+    {
+        return $this->participations()
+            ->whereHas('contest', function ($query) {
+                $query->whereIn('status', [
+                    Contest::STATUS_APPROVED,
+                    Contest::STATUS_RUNNING,
+                ]);
+            })
+            ->exists();
+    }
+
     /**
      * A team "display name" for the credential PDF / scoreboard.
      * Returns e.g. "Team Alpha (Alice, Bob)".

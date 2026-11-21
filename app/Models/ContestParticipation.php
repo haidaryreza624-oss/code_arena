@@ -53,12 +53,12 @@ class ContestParticipation extends Authenticatable
 
     public function submissions(): HasMany
     {
-        return $this->hasMany(Submission::class);
+        return $this->hasMany(Submission::class, 'participation_id');
     }
 
     public function questions(): HasMany
     {
-        return $this->hasMany(ContestQuestion::class);
+        return $this->hasMany(ContestQuestion::class, 'participation_id');
     }
 
     // ---------- Helpers ----------
