@@ -130,7 +130,7 @@ class Submission extends Model
      */
     public function minutesSinceContestStart(): int
     {
-        $start = $this->contest?->started_at ?? $this->contest?->start_time;
+        $start = $this->contest?->start_at ?? $this->contest?->start_time;
 
         return $start ? (int) $start->diffInMinutes($this->submitted_at) : 0;
     }

@@ -32,7 +32,7 @@ class ContestParticipation extends Authenticatable
     {
         return [
             'password'                => 'hashed',
-            'seat_number'             => 'integer',
+            'seat-number'             => 'integer',
             'credentials_generated_at'=> 'datetime',
             'created_at'              => 'datetime',
             'updated_at'              => 'datetime',

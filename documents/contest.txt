@@ -1,0 +1,54 @@
+
+3- contest mangement
+	insertion
+		- admin can create a draft contest
+		- we ask for basic information of a contest in the contest creation
+		- admin cannot create a contest when we have an active contest 
+	show 
+		- admin can see a list of contests, (approved or running), ended contests, drafts
+	index
+		- by clicking a draft contest admin can mange that contest
+		draft_contest managment
+			- we can update the information like everything
+			- we can delete the contest
+			- draft contest problem mangement
+				- admin should see a list of assigned problems 
+				- should be able to see details of a problem(should be redirected to the problem deatil page already created in problem mangement section)
+				- assigning a problem to this contest from problem bank
+				- unassign a problem thats already assign
+			- draft contest team mangement
+				- should be able to see list of assigned teams
+				- admin  assign teams to this contest from team bank, one at a time or multiple teams with powerfull filtering option
+				- should be able to see team details (redirected to team details page that was made befor
+				- should be able to genreate and print contest participation credentials in bulk and individually
+			- admin should be able to close registration (changin the state to approved)			
+		- by clikcing a approved contest admin can mange that
+			- problems, participations and contest information are read only
+			- admin can regenrate crednetials for particiaptions overwritting the last one if exist
+			- admin can print the questions in pdf
+			- admin can start manullay the contes (changin the state to running)
+		- by clikcing a running contest admin can mange that 
+			- manullay set the freeze minutes to (now - end) means freeze the scoreboard right now
+			- can unfreeze the scoreboard by setting the freeze minutes = 0
+			- submission mangement
+				- can see the list of submission for this contes with powerfull filtering and realtime searching
+				- by clikcing a submission can see the detials of the submission, also can see list of all submission_results associated with this submission
+				- can rejudge a submission submitting that submssion again back to judge and increasing rejudge_count and updatin last_rejudged by and last_Rejudged_At
+			- quesiton mangment
+				- can see list of questions asked during contest
+				- by clicking the question should see a detail page and can answer to that question there and submit the answer
+			- can see the live scoreabord
+			- manually end the contest
+		- by clicking a ended contest admin can see some readonlu information
+			- admin should see a basic stats about the contest 
+			- list of teams, scorboard, questions (if not deleted), more stats is better
+
+
+			
+		
+			
+
+
+
+
+		

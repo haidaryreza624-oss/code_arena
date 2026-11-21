@@ -43,11 +43,11 @@ class Contest extends Model
         return [
             'start_time'     => 'datetime',
             'end_time'       => 'datetime',
-            'started_at'     => 'datetime',
-            'ended_at'       => 'datetime',
+            'start_at'       => 'datetime',
+            'end_at'         => 'datetime',
             'approved_at'    => 'datetime',
             'is_public'      => 'boolean',
-            'freeze_minutes' => 'integer',
+            'freeze-minutes' => 'integer',
             'created_at'     => 'datetime',
             'updated_at'     => 'datetime',
         ];
@@ -190,7 +190,7 @@ class Contest extends Model
 
             // Absorb scheduler jitter if we're close to start_time;
             // otherwise use now() (late approval case).
-            $this->started_at = now()->diffInMinutes($this->start_time, true) <= 2
+            $this->start_at = now()->diffInMinutes($this->start_time, true) <= 2
                 ? $this->start_time
                 : now();
 
@@ -198,9 +198,9 @@ class Contest extends Model
         }
 
         if ($this->status === self::STATUS_RUNNING && now()->gte($this->end_time)) {
-            $this->status   = self::STATUS_ENDED;
-            $this->ended_at = now();
-            $changed        = true;
+            $this->status = self::STATUS_ENDED;
+            $this->end_at = now();
+            $changed      = true;
         }
 
         if ($changed) {
@@ -214,8 +214,8 @@ class Contest extends Model
      */
     public function manualStart(): void
     {
-        $this->status     = self::STATUS_RUNNING;
-        $this->started_at = now();
+        $this->status   = self::STATUS_RUNNING;
+        $this->start_at = now();
         $this->save();
     }
 
@@ -225,8 +225,8 @@ class Contest extends Model
      */
     public function manualEnd(): void
     {
-        $this->status   = self::STATUS_ENDED;
-        $this->ended_at = now();
+        $this->status = self::STATUS_ENDED;
+        $this->end_at = now();
         $this->save();
     }
 }
