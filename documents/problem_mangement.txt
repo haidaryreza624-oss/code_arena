@@ -1,0 +1,23 @@
+first(read the problem migration,test_case migration, contest_problem migration, and models)
+2- problem mangement
+	insertion
+		- an admin must be able to insert a problem
+	show
+		- admin should be able to see the list of problems
+	index
+		- admin should be able to click a problem and see its details including (wheather this problem is in a active contest, the test cases in a dropdown and an action section for following actictions)
+	
+	
+	deletion
+		- an admin must be able to delete problem that deletes the test cases as well
+		- a problem already in an active contest cannot be deleted 
+	update
+		- an admin must be abe to update a problem 
+		- a problem already in an active contest cannot be updated 
+	test_case mangemnet:
+		- admin shoul be able to delete and add new test case
+		- admin should be ble to mark a test case as sample or hidden
+		- admin also should be able to edit a test case in place, and saving or discarding changes
+		
+		
+	

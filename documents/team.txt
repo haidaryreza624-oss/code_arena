@@ -1,0 +1,11 @@
+4- team mangement
+	- admin can see alist of teams
+	- admin should be forwarded to team details after clicking on the contest in detail page admin can add a mmeber delete a member and edit basic information of the tam
+	- in team detail we have to see some basic stats of the team like the contes the joined and etc .. (more stats is better)
+	- admin can import team data in bulk using csv
+	- admin can delete teams (except those in active contest)
+	- admin can filter teams by contest and can delete them as well in group
+	
+
+	
+	

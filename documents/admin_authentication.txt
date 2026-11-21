@@ -1,0 +1,17 @@
+1. admin authentication
+- create a basic layout and paritals (header and footer)
+- use bootstrap cdn as the style no front end build or dependecy we will use bootstrap cdn
+- create a login page for admins 
+- create a dashborad page for admin to be redirected to after logging in
+- the dashboard is the base of admin, admin can see features and settings that his role allows him
+- create middleware for admin so admins can only access the admin dashboard
+- make a card section for each setting in the dashboard
+- create a seprate view folder for each of settings and put a index.blade.php
+- make the login route only availeble for none authenticated users or logged out usersa and the logout route to authenticated users
+- create a route group for admin and inside it create route group for eachsection 
+- create the logout route and logout form in the header partials and wrap the logout form inside @auth
+
+
+
+		
+
