@@ -7,6 +7,8 @@
 
 
 
+
+
 8-admin submission mangement 
 - admin should see a list of all submission by clicking he should be forwared to submission detail page
 - advance filtering for list of submission like by contest by team by time and etc 
