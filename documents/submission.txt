@@ -1,0 +1,7 @@
+7- team submission 
+- first read the file '' its the judge fastapi server documentation
+- than create the services acossiated with the judge 
+- than test and use the judge with some random submission from yourself via the servies you have created
+- this is the actual judge that will handle the teams submissions and etc, it handles the queue itself so no need to implement it in Laravel 
+- do we need worker in the background for thid - 
+

@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\ProblemController;
 use App\Http\Controllers\Admin\TestCaseController;
+use App\Http\Controllers\Admin\TeamController;
+use App\Http\Controllers\Admin\TeamMemberController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -46,7 +48,19 @@ Route::prefix('admin')
         });
 
         Route::prefix('teams')->name('teams.')->group(function () {
-            Route::view('/', 'admin.teams.index')->name('index');
+            Route::get('/', [TeamController::class, 'index'])->name('index');
+            Route::post('/', [TeamController::class, 'store'])->name('store');
+            Route::post('/import', [TeamController::class, 'import'])->name('import');
+            Route::post('/bulk-delete', [TeamController::class, 'bulkDestroy'])->name('bulk-delete');
+            Route::get('/{team}', [TeamController::class, 'show'])->name('show');
+            Route::put('/{team}', [TeamController::class, 'update'])->name('update');
+            Route::delete('/{team}', [TeamController::class, 'destroy'])->name('destroy');
+
+            Route::post('/{team}/members', [TeamMemberController::class, 'store'])->name('members.store');
+            Route::put('/{team}/members/{teamMember}', [TeamMemberController::class, 'update'])
+                ->name('members.update');
+            Route::delete('/{team}/members/{teamMember}', [TeamMemberController::class, 'destroy'])
+                ->name('members.destroy');
         });
 
         Route::prefix('submissions')->name('submissions.')->group(function () {
