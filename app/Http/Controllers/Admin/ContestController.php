@@ -10,6 +10,7 @@ use App\Models\Problem;
 use App\Models\Submission;
 use App\Models\Team;
 use App\Models\TestCase;
+use App\Services\ContestScoreboard;
 use App\Services\Judge\JudgeClient;
 use App\Services\Judge\JudgeException;
 use App\Services\Judge\SubmissionJudgeStatusSync;
@@ -71,6 +72,7 @@ class ContestController extends Controller
     public function show(
         Request $request,
         Contest $contest,
+        ContestScoreboard $contestScoreboard,
         JudgeClient $judge,
         SubmissionJudgeStatusSync $statusSync,
     ): View
@@ -143,7 +145,7 @@ class ContestController extends Controller
             'availableProblems' => $availableProblems,
             'availableTeams' => $availableTeams,
             'submissions' => $submissions,
-            'scoreboard' => $this->scoreboard($contest),
+            'scoreboard' => $contestScoreboard->standings($contest),
             'judgeErrors' => array_unique($judgeErrors),
         ]);
     }
@@ -424,64 +426,4 @@ class ContestController extends Controller
         abort(422, 'No contest problem labels are available.');
     }
 
-    /**
-     * @return list<array{team: Team, points: int, solved: int, penalty: int}>
-     */
-    private function scoreboard(Contest $contest): array
-    {
-        $contestProblems = $contest->contestProblems()->with('problem')->get();
-        $rows = [];
-
-        foreach ($contest->participations()->with('team')->get() as $participation) {
-            $cutoff = (int) $contest->{'freeze-minutes'} > 0
-                ? $contest->end_time->copy()->subMinutes((int) $contest->{'freeze-minutes'})
-                : null;
-
-            $submissions = $participation->submissions()
-                ->where('contest_id', $contest->id)
-                ->where('is_sample_run', false)
-                ->where('status', Submission::STATUS_DONE)
-                ->when($cutoff !== null, fn (Builder $query) => $query->where('submitted_at', '<=', $cutoff))
-                ->orderBy('submitted_at')
-                ->get()
-                ->groupBy('contest_problem_id');
-
-            $points = 0;
-            $solved = 0;
-            $penalty = 0;
-
-            foreach ($contestProblems as $contestProblem) {
-                $attempts = $submissions->get($contestProblem->id, collect());
-                $wrongAttempts = 0;
-                foreach ($attempts as $submission) {
-                    if ($submission->verdict === Submission::VERDICT_ACCEPTED) {
-                        $points += $contestProblem->points;
-                        $solved++;
-                        $penalty += $submission->minutesSinceContestStart() + (20 * $wrongAttempts);
-                        break;
-                    }
-
-                    if (in_array($submission->verdict, [
-                        Submission::VERDICT_WRONG_ANSWER,
-                        Submission::VERDICT_TIME_LIMIT,
-                        Submission::VERDICT_MEMORY_LIMIT,
-                        Submission::VERDICT_RUNTIME_ERROR,
-                    ], true)) {
-                        $wrongAttempts++;
-                    }
-                }
-            }
-
-            $rows[] = [
-                'team' => $participation->team,
-                'points' => $points,
-                'solved' => $solved,
-                'penalty' => $penalty,
-            ];
-        }
-
-        usort($rows, fn (array $a, array $b) => [$b['points'], $b['solved'], $a['penalty']] <=> [$a['points'], $a['solved'], $b['penalty']]);
-
-        return $rows;
-    }
 }

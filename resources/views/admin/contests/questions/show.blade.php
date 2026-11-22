@@ -6,7 +6,13 @@
 <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
     <div>
         <h1 class="h2 mb-1">Contest question</h1>
-        <p class="text-muted mb-0">{{ $contest->name }} · {{ $question->participation->team->name }} · {{ $question->created_at->format('M j, Y H:i') }}</p>
+        <p class="text-muted mb-0">
+            {{ $contest->name }} · {{ $question->participation->team->name }}
+            @if ($question->contestProblem)
+                · {{ $question->contestProblem->label }} — {{ $question->contestProblem->problem->title }}
+            @endif
+            · {{ $question->created_at->format('M j, Y H:i') }}
+        </p>
     </div>
     <a class="btn btn-outline-secondary" href="{{ route('admin.contests.show', $contest) }}">Back to contest</a>
 </div>

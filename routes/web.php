@@ -10,11 +10,34 @@ use App\Http\Controllers\Admin\ProblemController;
 use App\Http\Controllers\Admin\TestCaseController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\TeamMemberController;
+use App\Http\Controllers\Team\ContestantController;
+use App\Http\Controllers\Team\TeamAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/team/login', [TeamAuthController::class, 'create'])->name('team.login');
+Route::post('/team/login', [TeamAuthController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('team.login.store');
+Route::prefix('team')
+    ->name('team.')
+    ->middleware('contestant')
+    ->group(function () {
+        Route::post('/logout', [TeamAuthController::class, 'destroy'])->name('logout');
+        Route::get('/', [ContestantController::class, 'dashboard'])->name('dashboard');
+        Route::get('/status', [ContestantController::class, 'status'])->name('status');
+        Route::get('/scoreboard', [ContestantController::class, 'scoreboard'])->name('scoreboard');
+        Route::get('/questions', [ContestantController::class, 'questions'])->name('questions');
+        Route::post('/questions', [ContestantController::class, 'askQuestion'])->name('questions.store');
+        Route::get('/problems/{contestProblem}', [ContestantController::class, 'problem'])->name('problems.show');
+        Route::post('/problems/{contestProblem}/submissions', [ContestantController::class, 'submit'])
+            ->name('submissions.store');
+        Route::get('/submissions/{submission}', [ContestantController::class, 'submission'])
+            ->name('submissions.show');
+    });
 
 Route::middleware('guest:web')->group(function () {
     Route::get('/admin/login', [AdminAuthController::class, 'create'])->name('admin.login');

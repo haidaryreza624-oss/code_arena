@@ -17,6 +17,7 @@ class ContestQuestion extends Model
     protected $fillable = [
         'contest_id',
         'participation_id',
+        'contest_problem_id',
         'body',
         'answer',
         'answered_by',
@@ -43,6 +44,11 @@ class ContestQuestion extends Model
     public function participation(): BelongsTo
     {
         return $this->belongsTo(ContestParticipation::class, 'participation_id');
+    }
+
+    public function contestProblem(): BelongsTo
+    {
+        return $this->belongsTo(ContestProblem::class);
     }
 
     public function answeredBy(): BelongsTo

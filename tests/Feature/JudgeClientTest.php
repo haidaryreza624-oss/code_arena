@@ -40,6 +40,21 @@ class JudgeClientTest extends TestCase
         });
     }
 
+    public function test_it_raises_time_limits_below_two_seconds_to_the_minimum(): void
+    {
+        config(['judge.base_url' => 'http://judge.test']);
+        Http::fake([
+            'judge.test/api/v1/submissions/' => Http::response([
+                'job_id' => 'job_short_limit',
+                'job_status' => 'Queued',
+            ], 202),
+        ]);
+
+        app(JudgeClient::class)->submit('python', 'print(1)', [], 1, 128000);
+
+        Http::assertSent(fn ($request) => $request['time_limit'] === 2);
+    }
+
     public function test_it_fetches_job_status_using_the_encoded_job_id(): void
     {
         config(['judge.base_url' => 'http://judge.test']);
