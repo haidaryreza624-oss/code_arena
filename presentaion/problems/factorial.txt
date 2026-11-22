@@ -1,0 +1,14 @@
+Factorial
+
+Read a non-negative integer N and print N factorial.
+N! is the product of all positive integers less than or equal to N.
+By definition, 0! = 1.
+
+Input
+One integer N.
+
+Output
+Print N!
+
+Constraints
+0 <= N <= 20

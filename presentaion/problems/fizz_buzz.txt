@@ -1,0 +1,16 @@
+Fizz Buzz
+
+Read one integer N and print exactly one result:
+- Print FizzBuzz if N is divisible by both 3 and 5.
+- Print Fizz if N is divisible by 3 but not 5.
+- Print Buzz if N is divisible by 5 but not 3.
+- Otherwise, print N.
+
+Input
+One integer N.
+
+Output
+The matching word or the value of N, on one line.
+
+Constraints
+1 <= N <= 1,000,000

@@ -102,12 +102,13 @@ class ContestantController extends Controller
         abort_unless($contestProblem->contest_id === $contest->id, 404);
 
         $validated = $request->validate([
-            'source_file' => ['required', 'file', 'max:5120', 'extensions:py,cpp,cc,cxx'],
+            'source_file' => ['required', 'file', 'max:5120', 'extensions:py,cpp,cc,cxx,java'],
         ]);
         $extension = strtolower($validated['source_file']->getClientOriginalExtension());
         $language = match ($extension) {
             'py' => 'python',
             'cpp', 'cc', 'cxx' => 'cpp',
+            'java' => 'java',
             default => abort(422, 'The uploaded file extension is not supported.'),
         };
         $testCases = $contestProblem->problem->testCases()->get();

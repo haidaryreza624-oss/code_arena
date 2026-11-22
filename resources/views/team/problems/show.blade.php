@@ -46,7 +46,7 @@
     <section class="card border-primary shadow-sm mb-4">
         <div class="card-header fw-semibold">Submit a solution</div>
         <div class="card-body">
-            <p class="text-muted">Upload a Python (.py) or C++ (.cpp, .cc, .cxx) source file. The language is detected from the file extension.</p>
+            <p class="text-muted">Upload a Python (.py) or C++ (.cpp, .cc, .cxx) or java (.java)source file. The language is detected from the file extension.</p>
             <form method="POST" enctype="multipart/form-data"
                   action="{{ route('team.submissions.store', $contestProblem) }}">
                 @csrf

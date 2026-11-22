@@ -1,0 +1,12 @@
+A Plus B
+
+Read two integers A and B and print their sum.
+
+Input
+One line containing two space-separated integers A and B.
+
+Output
+Print A + B.
+
+Constraints
+-1,000,000,000 <= A, B <= 1,000,000,000
