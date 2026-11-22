@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminSubmissionController;
 use App\Http\Controllers\Admin\ContestController;
 use App\Http\Controllers\Admin\ContestQuestionController;
 use App\Http\Controllers\Admin\ContestSubmissionController;
@@ -104,7 +105,7 @@ Route::prefix('admin')
         });
 
         Route::prefix('submissions')->name('submissions.')->group(function () {
-            Route::view('/', 'admin.submissions.index')->name('index');
+            Route::get('/', [AdminSubmissionController::class, 'index'])->name('index');
         });
 
         Route::prefix('questions')->name('questions.')->group(function () {

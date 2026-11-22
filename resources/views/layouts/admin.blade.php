@@ -36,6 +36,27 @@
                 }).format(date);
             }
         });
+
+        const pad = (value) => String(value).padStart(2, '0');
+        const toLocalInputValue = (date) => (
+            date.getFullYear()+'-'+pad(date.getMonth() + 1)+'-'+pad(date.getDate())
+            +'T'+pad(date.getHours())+':'+pad(date.getMinutes())
+        );
+        document.querySelectorAll('[data-utc-target]').forEach((localInput) => {
+            const utcInput = document.getElementById(localInput.dataset.utcTarget);
+            if (utcInput.value) {
+                const date = new Date(utcInput.value);
+                if (!Number.isNaN(date.getTime())) {
+                    localInput.value = toLocalInputValue(date);
+                }
+            }
+
+            localInput.form.addEventListener('submit', () => {
+                utcInput.value = localInput.value
+                    ? new Date(localInput.value).toISOString()
+                    : '';
+            });
+        });
     </script>
     @stack('scripts')
 </body>
