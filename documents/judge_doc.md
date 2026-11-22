@@ -80,12 +80,14 @@ Content-Type: application/json
   `test_cases`        Test cases Laravel sends for execution.
   `stdin`             Input provided to the submitted program.
   `expected_output`   Output expected from the submitted program.
-  `time_limit`        Maximum execution time per test case, in seconds.
+  `time_limit`        Maximum execution time per test case, in seconds. Laravel enforces a 2-second minimum because this judge instance can leave 1-second jobs stuck in `Running`.
   `memory_limit`      Memory threshold, in KB.
 
 **Important:** The time limit applies to each test case individually.
 The memory limit is currently checked after execution using approximate
 memory monitoring; it is not yet an operating-system-enforced limit.
+The 2-second minimum is a temporary compatibility workaround and means
+problem limits below 2000 ms are not enforced exactly by Laravel.
 
 ### Successful response
 

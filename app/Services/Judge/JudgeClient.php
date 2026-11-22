@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Http;
 
 class JudgeClient
 {
+    private const MINIMUM_TIME_LIMIT_SECONDS = 2;
+
     /**
      * @param  list<array{stdin: string, expected_output: string}>  $testCases
      * @return array{job_id: string, job_status: string}
@@ -20,6 +22,8 @@ class JudgeClient
         int $timeLimit,
         int $memoryLimit,
     ): array {
+        $timeLimit = max(self::MINIMUM_TIME_LIMIT_SECONDS, $timeLimit);
+
         try {
             $response = Http::baseUrl($this->baseUrl())
                 ->acceptJson()

@@ -15,7 +15,7 @@ class ContestQuestionController extends Controller
     {
         $contest->syncState();
         abort_unless($question->contest_id === $contest->id, 404);
-        $question->load(['participation.team', 'answeredBy']);
+        $question->load(['participation.team', 'contestProblem.problem', 'answeredBy']);
 
         return view('admin.contests.questions.show', compact('contest', 'question'));
     }
@@ -30,6 +30,12 @@ class ContestQuestionController extends Controller
             'answer' => ['required', 'string', 'max:20000'],
             'visibility' => ['required', 'in:public,private'],
         ]);
+        if ($question->contest_problem_id !== null) {
+            abort_unless(
+                $contest->contestProblems()->whereKey($question->contest_problem_id)->exists(),
+                404
+            );
+        }
         $question->forceFill([
             ...$validated,
             'answered_by' => $request->user('web')->id,
